@@ -13,7 +13,7 @@ from generate_lrpr import generateLRPRMeasurements
 
 # generating measurements
 image_name = 'image_tensor_small.npz'
-m_dim = 2500
+m_dim = 1500
     
 true_X, Y, A = generateLRPRMeasurements(image_name=image_name, m_dim=m_dim)
 
