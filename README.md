@@ -1,4 +1,4 @@
-# Low-Rank-Phase-Retrieval
+# Provable Low Rank Phase Retrieval
 
 Provable Low Rank Phase Retrieval (LRPR) implementation for solving a matrix of complex valued signals. This implementation is based on the paper "Provable Low Rank Phase Retrieval".
 
