@@ -1,6 +1,6 @@
 # Provable Low Rank Phase Retrieval
 
-Provable Low Rank Phase Retrieval (LRPR) implementation for solving a matrix of complex valued signals. This implementation is based on the paper "Provable Low Rank Phase Retrieval".
+Provable Low Rank Phase Retrieval (AltMinLowRaP) implementation for solving a matrix of complex valued signals. This implementation is based on the paper "Provable Low Rank Phase Retrieval".
 
 For more information: https://arxiv.org/abs/1902.04972
 
