@@ -21,20 +21,19 @@ This tutorial can be found in provable_lrpr_run.py:
 ```
 import numpy as np
 import matplotlib.pyplot as plt
-from provable_lrpr import lrpr_fit
+from provable_lrpr import provable_lrpr_fit
 from generate_lrpr import generateLRPRMeasurements
 
 # generating measurements
 image_name = 'image_tensor_small.npz'
-m_dim = 2500
+m_dim = 600
     
 true_X, Y, A = generateLRPRMeasurements(image_name=image_name, m_dim=m_dim)
 
 # parameters for LRPR
-rank = 5
-max_iters = 20
+max_iters = 15
 
-U_hat, B_hat = lrpr_fit(rank=rank, Y=Y, A=A, max_iters=max_iters)
+U_hat, B_hat = provable_lrpr_fit(Y=Y, A=A, max_iters=max_iters)
 
 # reconstructing X and plotting
 img_row = true_X.shape[0]
