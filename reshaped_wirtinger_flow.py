@@ -69,7 +69,7 @@ def initSpectral(y, A, lambda_init, alpha_l, alpha_u):
     y_lower = np.where(y<lower_bound, 0, y)
     y_trunc = np.where(y_lower>upper_bound, 0, y_lower)
     
-    Y_mat = np.zeros((n_dim, n_dim))
+    Y_mat = np.zeros((n_dim, n_dim), dtype=np.complex)
     
     for i in range(m_dim):
         a_i = A[:, i]
@@ -106,7 +106,7 @@ def computeGradient(z, y, A):
     """
     
     m_dim = A.shape[1]
-    update_z = np.zeros(z.shape)
+    update_z = np.zeros(z.shape, dtype=np.complex)
 
     for i in range(m_dim):
         a_i = A[:, i]

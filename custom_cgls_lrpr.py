@@ -47,7 +47,7 @@ def construct_Y(A, U, B):
     for k in range(q):
         b_k = B[k]
         y_k = A[:, :, k].T @ U @ b_k
-        Y_all[st:en] = y_k
+        Y_all[st:en] = y_k.squeeze()
     
         st+=m
         en+=m
@@ -55,7 +55,7 @@ def construct_Y(A, U, B):
     return Y_all
 
 
-def construct_D(C_y, A, B):
+def constructSolutions(C_y, B, A):
     """
            
         Arguments:
@@ -73,18 +73,14 @@ def construct_D(C_y, A, B):
     
     st = 0
     en = m
+    
     for k in range(q):
-        #A_y = A[:, :, k] @ C_y[st:en]
-        #b_k_row = np.reshape(B[k], (1, -1))
-        #B_kron = np.kron(b_k_row, A_y)
-        #solved_U += B_kron.T.squeeze()
-        b_k_row = np.reshape(B[k], (1, -1))
-        b_kron_A = np.kron(b_k_row, A[:, :, k].T)
-        b_kron_A = b_kron_A.T
-        final = b_kron_A @ C_y[st:en]
+        b_k = np.reshape(B[k], (-1, 1))
+        B_kron = np.kron(b_k, A[:, :, k])
+
+        A_y = B_kron @ C_y[st:en]
         
-        solved_U += final
-        
+        solved_U += A_y
         
         st += m
         en += m
@@ -92,15 +88,14 @@ def construct_D(C_y, A, B):
     return solved_U
 
 
-
-def cglsLRPR(A_sample, B_factor, C_y, max_iter=30, tol=1e-16):
+def cglsLRPR(A_sample, B_factor, C_y, max_iter=50, tol=1e-6):
     """
         Solves for U from the LRPR problem with modified CGLS for A(Ub) = y.
     """
     
     # initializing
     r = C_y
-    s = construct_D(C_y=C_y, A=A_sample, B=B_factor)
+    s = constructSolutions(C_y=C_y, B=B_factor, A=A_sample)
     n = s.shape[0]
     x = np.zeros((n, )) # optimize variable
     
@@ -129,7 +124,7 @@ def cglsLRPR(A_sample, B_factor, C_y, max_iter=30, tol=1e-16):
         r = r - alpha*q
         
         # update s
-        s = construct_D(C_y=r, A=A_sample, B=B_factor)
+        s = constructSolutions(C_y=r, B=B_factor, A=A_sample)
         
         norms = np.linalg.norm(s)
         gamma1 = gamma

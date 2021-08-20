@@ -6,20 +6,43 @@ Created on Fri Jul 23 11:44:28 2021
 @author: soominkwon
 """
 
-
 import numpy as np
 from custom_cgls_lrpr import cglsLRPR
 from reshaped_wirtinger_flow import rwf_fit
 
 
-def LRPRinit(rank, Y, A):
+def chooseRank(array, omega=1.3):
+    """
+        Function to return the index of the difference between
+        the j-th and (n)-th element with threshold omega.
+    """
+    
+    array_len = array.shape[0]
+    lambda_n = array[array_len-1]
+    
+    idx = 0
+    
+    for i in range(array_len):
+        diff = np.abs(array[i] - lambda_n)
+    
+        if diff > omega:
+            idx = i
+            
+    # if rank 1 was chosen
+    if idx == 0:
+        idx = 1
+    return idx
+
+
+def LRPRinit(Y, A, rank=None):
     """ Function to use spectral initialization for the basis matrix U, where
         X = UB.
     
         Arguments:
-            rank: Rank of X
             Y: Observation matrix with dimensions (m x q)
             A: Measurement tensor with dimensions (n x m x q)
+            rank: Rank for U. If rank is None, then choose a rank by
+                    the method specified in the paper.
 
     """    
     
@@ -27,10 +50,7 @@ def LRPRinit(rank, Y, A):
     m = Y.shape[0]
     q = Y.shape[1]
     n = A.shape[0]
-    
-    # squaring Y
-    Y = Y**2
-    
+        
     Y_u = np.zeros((n, n))
     trunc_val = 9*Y.mean() # value for truncation
     
@@ -44,10 +64,25 @@ def LRPRinit(rank, Y, A):
     Y_u = (1/(m*q)) * Y_u
     
     # computing SVD for Y
-    U, S, Vh = np.linalg.svd(Y_u, full_matrices=True)
-    U_init = U[:, :rank]
-
-    return U_init
+    eig_val, eig_vec = np.linalg.eig(Y_u)
+    
+    # choosing rank if not given
+    if rank is None:
+        rank = chooseRank(eig_val)
+        
+        # fixing the chosen rank if needed
+        max_rank = min(n, q)
+        if rank > max_rank:
+            rank = max_rank
+        
+        U = eig_vec[:, :rank]
+    else:
+        U = eig_vec[:, :rank]
+    
+    print('Chosen Rank:', rank)
+    print('Spectral Initialization Complete.')
+    
+    return U
     
 
 def updateC(A, U, B):
@@ -83,14 +118,14 @@ def updateC(A, U, B):
     return C_tensor
 
 
-def lrpr_fit(rank, Y, A, max_iters, print_iter=True):
+def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
     """
         Training loop for provable LRPR.
         
         Arguments:
-            rank: Rank for matrix X
             Y: Observation matrix (m x q)
             A: Sampling tensor (n x m x q)
+            max_iters: Maximum number of iterations for training loop
             
         Returns:
             U_init: Solved U after iteration T
@@ -98,17 +133,16 @@ def lrpr_fit(rank, Y, A, max_iters, print_iter=True):
         
     """
     
+    # initializing U and B    
+    U_init = LRPRinit(Y=Y, A=A, rank=rank)
+    
     # initializing dimensions
-    n = A.shape[0]
     m = A.shape[1]
     q = A.shape[2]    
+    n, r = U_init.shape
     
-    # initializing U and B    
-    U_init = LRPRinit(rank=rank, Y=Y, A=A)
-    B_init = np.zeros((q, rank))
-    
-    print('Spectral Initialization Complete.')
-    
+    B_init = np.zeros((q, r))
+
     
     # starting training loop
     for i in range(max_iters):
@@ -127,10 +161,10 @@ def lrpr_fit(rank, Y, A, max_iters, print_iter=True):
             
         # updating phase matrix C
         C_all = updateC(A, U_init, B_init)
-        
+
         # applying QR decomposition
-        Qb, Re = np.linalg.qr(B_init)
-        B_init = Re
+        Qb, Rb = np.linalg.qr(B_init)
+        B_init = Qb
          
         # update U
         st = 0
@@ -145,7 +179,7 @@ def lrpr_fit(rank, Y, A, max_iters, print_iter=True):
             en += m        
         
         U_vec = cglsLRPR(A_sample=A, B_factor=B_init, C_y=Y_vec)
-        U_init = np.reshape(U_vec, (n, rank), order='F')
+        U_init = np.reshape(U_vec, (n, r), order='F')
         
         # applying QR decomposition
         Qu, Ru = np.linalg.qr(U_init)
