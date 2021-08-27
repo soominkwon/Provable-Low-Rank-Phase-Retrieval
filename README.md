@@ -9,54 +9,50 @@ For more information: https://arxiv.org/abs/1902.04972
 The following is a list of which algorithms correspond to which Python script:
 
 * custom_cgls_lrpr.py - Customized conjugate gradient least squares (CGLS) solver
-* generate_lrpr.py - Generates sample measurements for testing
-* image_tensor_small.npz - Sample image
 * provable_lrpr.py - Implementation of provable LRPR
 * reshaped_wirtinger_flow.py - Implementation of RWF
-* provable_lrpr_run.py - Example on using provable LRPR implementation
+* sample_run.py - Example on using provable LRPR implementation
 
 ## Tutorial
-This tutorial can be found in provable_lrpr_run.py:
+This tutorial can be found in sample_run.py:
 
 ```
 import numpy as np
 import matplotlib.pyplot as plt
 from provable_lrpr import provable_lrpr_fit
-from generate_lrpr import generateLRPRMeasurements
 
-# generating measurements
-image_name = 'image_tensor_small.npz'
-m_dim = 600
+# importing sample data
+data_name = 'mouse_small_data.npz'
+
+with np.load(data_name) as sample_data:
+    vec_X = sample_data['arr_0']
+    Y = sample_data['arr_1']
+    A = sample_data['arr_2']
     
-true_X, Y, A = generateLRPRMeasurements(image_name=image_name, m_dim=m_dim)
+# initializing parameters
+image_dims = [10, 30]
+rank = 1
+iters = 5
 
-# parameters for LRPR
-max_iters = 15
+# fitting new X
+X_lrpr =  provable_lrpr_fit(Y=Y, A=A, max_iters=iters, rank=rank)
 
-U_hat, B_hat = provable_lrpr_fit(Y=Y, A=A, max_iters=max_iters)
+X = np.reshape(vec_X, (image_dims[0], image_dims[1], -1), order='F')
+X_lrpr = np.reshape(X_lrpr, (image_dims[0], image_dims[1], -1), order='F')
 
-# reconstructing X and plotting
-img_row = true_X.shape[0]
-img_col = true_X.shape[1]
-q = B_hat.shape[0]
-
-solved_vec_X = U_hat @ B_hat.T
-
-solved_X = np.reshape(solved_vec_X, (img_row, img_col, q))
-
-# plotting first image
-plt.imshow(np.abs(true_X[:, :, 0]), cmap='gray')
+# plotting results
+plt.imshow(np.abs(X[:, :, 0]), cmap='gray')
 plt.title('True Image')
 plt.show()
 
-plt.imshow(np.abs(solved_X[:, :, 0]), cmap='gray')
-plt.title('Solved Image via Provable LRPR')
+plt.imshow(np.abs(X_lrpr[:, :, 0]), cmap='gray')
+plt.title('Reconstructed Image via Provable LRPR')
 plt.show()
 ```
 
 ## Solution Example
 
 <p align="center">
-  <a href="url"><img src="https://github.com/soominkwon/Low-Rank-Phase-Retrieval/blob/main/provable_lrpr_example.png" align="left" height="300" width="300" ></a>
+  <a href="url"><img src="https://github.com/soominkwon/Provable-Low-Rank-Phase-Retrieval/blob/main/provable_sample_results.png" align="left" height="300" width="300" ></a>
 </p>
 
