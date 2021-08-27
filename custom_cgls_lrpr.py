@@ -39,7 +39,7 @@ def construct_Y(A, U, B):
     
     U = np.reshape(U, (n, r), order='F')
     
-    Y_all = np.zeros((m*q, ))
+    Y_all = np.zeros((m*q, ), dtype=np.complex)
     
     st = 0
     en = m
@@ -69,17 +69,20 @@ def constructSolutions(C_y, B, A):
     
     r = B.shape[1] # rank
     
-    solved_U = np.zeros((n*r, ))
+    solved_U = np.zeros((n*r, ), dtype=np.complex)
     
     st = 0
     en = m
     
     for k in range(q):
+        #A_y = A[:, :, k] @ C_y[st:en]
         b_k = np.reshape(B[k], (-1, 1))
         B_kron = np.kron(b_k, A[:, :, k])
 
         A_y = B_kron @ C_y[st:en]
         
+        #B_kron = np.kron(A_y.T, b_k)
+        #B_kron = np.reshape(B_kron, (-1, ))
         solved_U += A_y
         
         st += m
@@ -97,7 +100,7 @@ def cglsLRPR(A_sample, B_factor, C_y, max_iter=50, tol=1e-6):
     r = C_y
     s = constructSolutions(C_y=C_y, B=B_factor, A=A_sample)
     n = s.shape[0]
-    x = np.zeros((n, )) # optimize variable
+    x = np.zeros((n, ), dtype=np.complex) # optimize variable
     
 
     # initializing for optimization
@@ -142,7 +145,6 @@ def cglsLRPR(A_sample, B_factor, C_y, max_iter=50, tol=1e-6):
         iters += 1
     
     return x
-    
     
     
     

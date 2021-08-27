@@ -51,7 +51,7 @@ def LRPRinit(Y, A, rank=None):
     q = Y.shape[1]
     n = A.shape[0]
         
-    Y_u = np.zeros((n, n))
+    Y_u = np.zeros((n, n), dtype=np.complex)
     trunc_val = 9*Y.mean() # value for truncation
     
     # looping through each frame
@@ -101,7 +101,7 @@ def updateC(A, U, B):
     m_dim = A.shape[1]    
     q_dim = B.shape[0]
     
-    C_tensor = np.zeros((m_dim, m_dim, q_dim))
+    C_tensor = np.zeros((m_dim, m_dim, q_dim), dtype=np.complex)
     
     for k in range(q_dim):
         A_k = A[:, :, k]
@@ -110,8 +110,8 @@ def updateC(A, U, B):
         x_hat = U @ b_k
         y_hat = A_k.T @ x_hat
         
-        #phase_y = np.exp(1j*np.angle(y_hat))
-        phase_y = np.sign(y_hat)
+        phase_y = np.exp(1j*np.angle(y_hat))
+        #phase_y = np.sign(y_hat)
         C_k = np.diag(phase_y)
         C_tensor[:, :, k] = C_k
                
@@ -141,8 +141,9 @@ def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
     q = A.shape[2]    
     n, r = U_init.shape
     
-    B_init = np.zeros((q, r))
+    B_init = np.zeros((q, r), dtype=np.complex)
 
+    Y = np.sqrt(Y) # square rooting Y
     
     # starting training loop
     for i in range(max_iters):
@@ -169,7 +170,7 @@ def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
         # update U
         st = 0
         en = m
-        Y_vec = np.zeros((m*q, ))
+        Y_vec = np.zeros((m*q, ), dtype=np.complex)
 
         for k in range(q):
             C_y = C_all[:, :, k] @ Y[:, k]
@@ -185,11 +186,8 @@ def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
         Qu, Ru = np.linalg.qr(U_init)
         U_init = Qu
         
-    return U_init, B_init
+
+    X_lrpr = U_init @ B_init.T 
+    return X_lrpr
         
-            
-
-
-
-
-
+  
