@@ -58,7 +58,7 @@ def LRPRinit(Y, A, rank=None):
     for k in range(q):
         y_k = Y[:, k]
         trunc_y_k = np.where(np.abs(y_k)<=trunc_val, y_k, 0)
-        Y_u += A[:, :, k] @ np.diag(trunc_y_k) @ A[:, :, k].T
+        Y_u += A[:, :, k] @ np.diag(trunc_y_k) @ A[:, :, k].conj().T
         
     # normalizing factors
     Y_u = (1/(m*q)) * Y_u
@@ -108,7 +108,7 @@ def updateC(A, U, B):
         b_k = B[k]
         
         x_hat = U @ b_k
-        y_hat = A_k.T @ x_hat
+        y_hat = A_k.conj().T @ x_hat
         
         phase_y = np.exp(1j*np.angle(y_hat))
         #phase_y = np.sign(y_hat)
@@ -156,7 +156,7 @@ def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
             y_k = Y[:, k]
             A_k = A[:, :, k]
             
-            A_hat = U_init.T @ A_k
+            A_hat = U_init.conj().T @ A_k
             b_k = rwf_fit(y=y_k, A=A_hat)
             B_init[k] = b_k
             
@@ -187,7 +187,7 @@ def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
         U_init = Qu
         
 
-    X_lrpr = U_init @ B_init.T 
+    X_lrpr = U_init @ B_init.conj().T
     return X_lrpr
         
   

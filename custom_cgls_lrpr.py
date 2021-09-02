@@ -46,7 +46,7 @@ def construct_Y(A, U, B):
     
     for k in range(q):
         b_k = B[k]
-        y_k = A[:, :, k].T @ U @ b_k
+        y_k = A[:, :, k].conj().T @ U @ b_k
         Y_all[st:en] = y_k.squeeze()
     
         st+=m

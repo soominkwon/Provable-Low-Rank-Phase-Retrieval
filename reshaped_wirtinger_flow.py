@@ -75,7 +75,7 @@ def initSpectral(y, A, lambda_init, alpha_l, alpha_u):
         a_i = A[:, i]
         a_i = np.reshape(a_i, (-1, 1))
         
-        per_slice = y_trunc[i] * (a_i @ a_i.T)
+        per_slice = y_trunc[i] * (a_i @ a_i.conj().T)
         Y_mat += per_slice
         
     Y_mat = (1/m_dim)*Y_mat
@@ -114,7 +114,7 @@ def computeGradient(z, y, A):
         
         y_i = y[i]
         
-        first_term = a_i.T @ z
+        first_term = a_i.conj().T @ z
 
         second_term = y_i * (first_term / np.abs(first_term))
         sum_term = (first_term - second_term) * a_i
