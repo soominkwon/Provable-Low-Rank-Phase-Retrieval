@@ -145,6 +145,12 @@ def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
 
     Y = np.sqrt(Y) # square rooting Y
     
+    #st_rwf = 0
+    #en_rwf = rwf_samples
+    
+    #st_lstsq = 0
+    #en_lstsq = train_samples
+    
     # starting training loop
     for i in range(max_iters):
         
@@ -161,11 +167,11 @@ def provable_lrpr_fit(Y, A, max_iters, rank=None, print_iter=True):
             B_init[k] = b_k
             
         # updating phase matrix C
-        C_all = updateC(A, U_init, B_init)
+        C_all = updateC(A=A, U=U_init, B=B_init)
 
         # applying QR decomposition
-        Qb, Rb = np.linalg.qr(B_init)
-        B_init = Qb
+        Qb, Rb = np.linalg.qr(B_init.conj().T)
+        B_init = Rb.conj().T
          
         # update U
         st = 0
